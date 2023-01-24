@@ -34,13 +34,6 @@ Definations: "#0>" are "free bytes", "#1>" are commands (and "[...]" are argumen
 7. Для сборки нажмите на кнопку "Ассемблировать".
 8. Статус сих операций будет отображаться на текстовом поле ниже.
 
-# Breaks / Переносы
-# English
-- [Yamizome Revenger](https://vndb.org/v22739).
-
-# Русский
-- [Павший во тьму мститель](https://vndb.org/v22739).
-
 # Tested / Протестировано
 # English
 Sometimes, there could be a very big problem: text may not fully get in textbox. But with this tool thou don't need to cut some part of text, no. Thou can use line and message breaks. Methods are below.
@@ -67,3 +60,10 @@ Sometimes, there could be a very big problem: text may not fully get in textbox.
 #1>21 
 [0]
 ```
+
+# Breaks / Переносы
+# English
+- [Yamizome Revenger](https://vndb.org/v22739).
+
+# Русский
+- [Павший во тьму мститель](https://vndb.org/v22739).
