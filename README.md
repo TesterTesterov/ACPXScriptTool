@@ -48,10 +48,12 @@ Sometimes, there could be a very big problem: text may not fully get in textbox.
 
 >>> For message breaks insert this below the current message ("SomeString" -> text on the new message).
 
+```
 #1>MESSAGE 
 []
 #1>21 
 [0]
+```
 
 # Русский
 Иногда можно столкнуться с одной большой-пребольшой проблемой: текст может не полностью влезать в текстовое окно. Однако, с сим средством вам не нужно обрезать его, отнюдь. Вы можеет организовывать переносы по строкам и сообщениям. Методы указаны ниже.
@@ -59,7 +61,9 @@ Sometimes, there could be a very big problem: text may not fully get in textbox.
 
 >>>Для переносов по сообщениям добавьте под текущее сообщение следующий код ("Какая_то_строка" -> текст на новой строке).
 
+```
 #1>MESSAGE 
 []
 #1>21 
 [0]
+```
