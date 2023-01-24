@@ -44,7 +44,7 @@ Definations: "#0>" are "free bytes", "#1>" are commands (and "[...]" are argumen
 # Tested / Протестировано
 # English
 Sometimes, there could be a very big problem: text may not fully get in textbox. But with this tool thou don't need to cut some part of text, no. Thou can use line and message breaks. Methods are below.
->>> For line breaks add to lines <r>.
+>>> For line breaks add to lines \<r\>.
 
 >>> For message breaks insert this below the current message.
 
@@ -57,7 +57,7 @@ Sometimes, there could be a very big problem: text may not fully get in textbox.
 
 # Русский
 Иногда можно столкнуться с одной большой-пребольшой проблемой: текст может не полностью влезать в текстовое окно. Однако, с сим средством вам не нужно обрезать его, отнюдь. Вы можеет организовывать переносы по строкам и сообщениям. Методы указаны ниже.
->>> Для переносов по строкам добавляйте в них <r>.
+>>> Для переносов по строкам добавляйте в них \<r\>.
 
 >>>Для переносов по сообщениям добавьте под текущее сообщение следующий код.
 
