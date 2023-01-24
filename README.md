@@ -34,7 +34,7 @@ Definations: "#0>" are "free bytes", "#1>" are commands (and "[...]" are argumen
 7. Для сборки нажмите на кнопку "Ассемблировать".
 8. Статус сих операций будет отображаться на текстовом поле ниже.
 
-# Tested / Протестировано
+# Breaks / Переносы
 # English
 Sometimes, there could be a very big problem: text may not fully get in textbox. But with this tool thou don't need to cut some part of text, no. Thou can use line and message breaks. Methods are below.
 >>> For line breaks add to lines **\<r\>**.
@@ -61,7 +61,7 @@ Sometimes, there could be a very big problem: text may not fully get in textbox.
 [0]
 ```
 
-# Breaks / Переносы
+# Tested / Протестировано
 # English
 - [Yamizome Revenger](https://vndb.org/v22739).
 
