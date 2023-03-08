@@ -23,6 +23,11 @@ class ACPXBinScript:
     )
     default_version = "ESCR1_00"
 
+    _string_format = {
+        "internal": '!?｡｢｣､･ｦｧｨｩｪｫｬｭｮｯｰｱｲｳｴｵｶｷｸｹｺｻｼｽｾｿﾀﾁﾂﾃﾄﾅﾆﾇﾈﾉﾊﾋﾌﾍﾎﾏﾐﾑﾒﾓﾔﾕﾖﾗﾘﾙﾚﾛﾜﾝﾞﾟ',
+        "external": '！？　。「」、…をぁぃぅぇぉゃゅょっーあいうえおかきくけこさしすせそたちつてとなにぬねのはひふへほまみむめもやゆよらりるれろわん゛゜',
+    }
+
     def __init__(self, bin_file: str, txt_file: str, bin_encoding: str = "cp932", txt_encoding: str = "cp932",
                  version: str = None, debug: bool = False) -> None:
         """Initialize ACPXBin class.
@@ -152,7 +157,10 @@ class ACPXBinScript:
                         arguments = self.command_lib.command_library[index][1]
                         pointer += self.command_lib.get_len_from_structure(arguments)
                         arg_data = json.loads(df.readline())
-                        strings.extend(self.command_lib.get_all_linked_strings(arguments, arg_data))
+                        new_strings = self.command_lib.get_all_linked_strings(arguments, arg_data)
+                        for i in range(len(new_strings)):
+                            new_strings[i] = self.restring(new_strings[i], 'external', 'internal')
+                        strings.extend(new_strings)
                 elif new_line[0] == '@':  # To be safe.
                     continue
 
@@ -259,6 +267,7 @@ class ACPXBinScript:
                 new_offset = string_block_start + 4 + offset
                 sf.seek(new_offset, 0)
                 new_string = self.command_lib.get_S(sf, self.bin_encoding)
+                new_string = self.restring(new_string, "internal", "external")
                 strings.append(new_string)
 
         return tuple(strings)
@@ -387,3 +396,12 @@ class ACPXBinScript:
                 break
         arg_data = json.loads(arg_line)
         return arg_data
+
+    @classmethod
+    def restring(cls, string, inner, outer):
+        in_strer = cls._string_format[inner]
+        out_strer = cls._string_format[outer]
+
+        for in_char, out_char in zip(in_strer, out_strer):
+            string = string.replace(in_char, out_char)
+        return string
