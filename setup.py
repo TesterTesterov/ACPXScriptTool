@@ -15,7 +15,7 @@ executables = [cx_Freeze.Executable("main.py",
 
 cx_Freeze.setup(
         name="ACPXScriptTool",
-        version="1.1",
+        version="1.2",
         description="Dual languaged (rus+eng) tool for (dis)assembling scripts of ACPX.\n"
                     "Двуязычное средство (рус+англ) для (диз)ассемблирования скриптов ACPX.",
         options={"build_exe": {"packages": []}},
