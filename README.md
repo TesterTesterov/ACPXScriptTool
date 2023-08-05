@@ -63,7 +63,9 @@ Sometimes, there could be a very big problem: text may not fully get in textbox.
 
 # Tested / Протестировано
 # English
+- [Panical Confusion](https://vndb.org/v16343)
 - [Yamizome Revenger](https://vndb.org/v22739).
 
 # Русский
+- [Паническое замешательство](https://vndb.org/v16343)
 - [Павший во тьму мститель](https://vndb.org/v22739).
