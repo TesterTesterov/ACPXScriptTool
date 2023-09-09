@@ -1,11 +1,11 @@
 # ACPXScriptTool
 # English
-Dual languaged (rus+eng) tool for disassembling and assembling scripts .bin from the visual novel's engine ACPX. Very incomplete list of games on this engine you can find on vndb. With it thou can fully edit all thecode, not just strings. Thou can add message breaks and change scenarios without restrictions!
+Dual languaged (rus+eng) tool for disassembling and assembling scripts .bin (sometimes with .010) from the visual novel's engine ACPX. Very incomplete list of games on this engine you can find on vndb. With it thou can fully edit all thecode, not just strings. Thou can add message breaks and change scenarios without restrictions!
 
 Definations: "#0>" are "free bytes", "#1>" are commands (and "[...]" are arguments below), "*" are labels, "@" есть комментарии.
 
 # Русский
-Двуязычное (рус+англ) средство для разборки и сборки скриптов .bin движка визуальных новелл ACPX. С неполным списком игр на нём вы можете ознакомиться на vndb. С ним вы можете полностью редактирвоать код, а не только строки; по вашему повелению добавлять разрывы между сообщений и даже менять сценарии по своему замыслу!
+Двуязычное (рус+англ) средство для разборки и сборки скриптов .bin (иногда с .010) движка визуальных новелл ACPX. С неполным списком игр на нём вы можете ознакомиться на vndb. С ним вы можете полностью редактирвоать код, а не только строки; по вашему повелению добавлять разрывы между сообщений и даже менять сценарии по своему замыслу!
 
 Определения: "#0>" есть "вольные байты", "#1>" есть команды (и под ними "[...]" аргументы), "*" есть метки, "@" есть комментарии.
 
@@ -13,7 +13,7 @@ Definations: "#0>" are "free bytes", "#1>" are commands (and "[...]" are argumen
 # English
 ![изображение](https://user-images.githubusercontent.com/66121918/214245322-3512616e-17c5-4008-b2d4-a78d4689fc89.png)
 
-1. Choose the mode, file or directory. In first mode you will work with one .bin - .txt pair, in second -- with all files in a pair of directories.
+1. Choose the mode, file or directory. In first mode you will work with one .bin (sometimes with .010) - .txt pair, in second -- with all files in a pair of directories.
 2. Enter a name of the .bin file in the top entry (do see, with extension) or the directory name. Thou can also enter relative or absolute path. You can also click on "..." to choose.
 3. Choose the version of script file.
 4. Enter a name of the .txt file (do see, with extension) or the directory name. Thou can also enter relative or absolute path. You can also click on "..." to choose.
@@ -25,7 +25,7 @@ Definations: "#0>" are "free bytes", "#1>" are commands (and "[...]" are argumen
 # Русский
 ![изображение](https://user-images.githubusercontent.com/66121918/214245251-cecf372e-2a5d-49d4-ab9d-f2e443d82798.png)
 
-1. Выберите режим: файл или директорию. В первом вы будете работать с парой .bin - .txt, во втором -- со всеми файлами в паре директорий.
+1. Выберите режим: файл или директорию. В первом вы будете работать с парой .bin (иногда с .010) - .txt, во втором -- со всеми файлами в паре директорий.
 2. Введите название файла .bin в верхней форме (заметьте, с расширением) или имя директории. Также можно вводить относительный или абсолютный до него путь. Также вы можете нажать на кнопку "...", чтобы выбрать.
 3. Введите название файла .txt в нижней форме (заметьте, с расширением) или имя директории. Также можно вводить относительный или абсолютный до него путь. Также вы можете нажать на кнопку "...", чтобы выбрать.
 4. Выберите версию скрипта.
@@ -41,11 +41,24 @@ Sometimes, there could be a very big problem: text may not fully get in textbox.
 
 >>> For message breaks insert this below the current message.
 
+In version ESCR1.00:
+
 ```
 #1>MESSAGE 
 []
 #1>21 
 [0]
+```
+
+In version ESCR_NEW:
+
+```
+#1>2d
+[0]
+#1>MESSAGE
+["……。"]
+#1>WAIT_FOR_CLICK
+[]
 ```
 
 # Русский
@@ -54,6 +67,8 @@ Sometimes, there could be a very big problem: text may not fully get in textbox.
 
 >>>Для переносов по сообщениям добавьте под текущее сообщение следующий код.
 
+В версии ESCR1.00:
+
 ```
 #1>MESSAGE 
 []
@@ -61,11 +76,24 @@ Sometimes, there could be a very big problem: text may not fully get in textbox.
 [0]
 ```
 
+В версии ESCR_NEW:
+
+```
+#1>2d
+[0]
+#1>MESSAGE
+["……。"]
+#1>WAIT_FOR_CLICK
+[]
+```
+
 # Tested / Протестировано
 # English
-- [Panical Confusion](https://vndb.org/v16343)
-- [Yamizome Revenger](https://vndb.org/v22739).
+- [Panical Confusion](https://vndb.org/v16343). *ESCR-1.00*.
+- [Yamizome Revenger](https://vndb.org/v22739). *ESCR-1.00*.
+- [Haison Shoujo \~Ayashi Madohi no Kago no Sato\~](https://vndb.org/v38037). *ESCR-NEW*.
 
 # Русский
-- [Паническое замешательство](https://vndb.org/v16343)
-- [Павший во тьму мститель](https://vndb.org/v22739).
+- [Паническое замешательство](https://vndb.org/v16343). *ESCR-1.00*.
+- [Павший во тьму мститель](https://vndb.org/v22739). *ESCR-1.00*.
+- [Девушки заброшенной деревни: Чарующее уединённое село](https://vndb.org/v38037). *ESCR-NEW*.
