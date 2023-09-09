@@ -103,17 +103,17 @@ class ACPXBinScriptGUI:
 
     common_help = {
         'eng': """
-Dual languaged (rus+eng) tool for disassembling and assembling scripts .bin from the visual novel's engine ACPX. Very incomplete list of games on this engine you can find on vndb. With it thou can fully edit all thecode, not just strings. Thou can add message breaks and change scenarios without restrictions!
+Dual languaged (rus+eng) tool for disassembling and assembling scripts .bin (sometimes with .010) from the visual novel's engine ACPX. Very incomplete list of games on this engine you can find on vndb. With it thou can fully edit all thecode, not just strings. Thou can add message breaks and change scenarios without restrictions!
 Definations: "#0>" are "free bytes", "#1>" are commands (and "[...]" are arguments below), "*" are labels, "@" есть комментарии.
     """,
         'rus': """
-Двуязычное (рус+англ) средство для разборки и сборки скриптов .bin движка визуальных новелл ACPX. С неполным списком игр на нём вы можете ознакомиться на vndb. С ним вы можете полностью редактирвоать код, а не только строки; по вашему повелению добавлять разрывы между сообщений и даже менять сценарии по своему замыслу!
+Двуязычное (рус+англ) средство для разборки и сборки скриптов .bin (иногда с .010) движка визуальных новелл ACPX. С неполным списком игр на нём вы можете ознакомиться на vndb. С ним вы можете полностью редактирвоать код, а не только строки; по вашему повелению добавлять разрывы между сообщений и даже менять сценарии по своему замыслу!
 Определения: "#0>" есть "вольные байты", "#1>" есть команды (и под ними "[...]" аргументы), "*" есть метки, "@" есть комментарии.
     """
     }
     usage_help = {
         'eng': """
-    1. Choose the mode, file or directory. In first mode you will work with one .bin - .txt pair, in second -- with all files in a pair of directories.
+    1. Choose the mode, file or directory. In first mode you will work with one .bin (sometimes with .010) - .txt pair, in second -- with all files in a pair of directories.
     2. Enter a name of the .bin file in the top entry (do see, with extension) or the directory name. Thou can also enter relative or absolute path. You can also click on "..." to choose.
     3. Choose the version of script file.
     4. Enter a name of the .txt file (do see, with extension) or the directory name. Thou can also enter relative or absolute path. You can also click on "..." to choose.
@@ -123,7 +123,7 @@ Definations: "#0>" are "free bytes", "#1>" are commands (and "[...]" are argumen
     8. Status will be displayed on the text area below.
     """,
         'rus': """
-    1. Выберите режим: файл или директорию. В первом вы будете работать с парой .bin - .txt, во втором -- со всеми файлами в паре директорий.
+    1. Выберите режим: файл или директорию. В первом вы будете работать с парой .bin (иногда c .010) - .txt, во втором -- со всеми файлами в паре директорий.
     2. Введите название файла .bin в верхней форме (заметьте, с расширением) или имя директории. Также можно вводить относительный или абсолютный до него путь. Также вы можете нажать на кнопку "...", чтобы выбрать.
     3. Введите название файла .txt в нижней форме (заметьте, с расширением) или имя директории. Также можно вводить относительный или абсолютный до него путь. Также вы можете нажать на кнопку "...", чтобы выбрать.
     4. Выберите версию скрипта.
@@ -136,26 +136,49 @@ Definations: "#0>" are "free bytes", "#1>" are commands (and "[...]" are argumen
 
     breaks_help = {
         'eng': """
-Sometimes there could be a very big problem: text may not fully get in textbox. But with this tool thou don't need to cut some part of text, no. Thou can use line and message breaks. Methods are below.
+Sometimes, there could be a very big problem: text may not fully get in textbox. But with this tool thou don't need to cut some part of text, no. Thou can use line and message breaks. Methods are below.
 >>> For line breaks add to lines <r>.
 
->>> For message breaks insert this below the current message ("SomeString" -> text on the new message).
+>>> For message breaks insert this below the current message.
+
+In version ESCR1.00:
 
 #1>MESSAGE 
 []
 #1>21 
 [0]
+
+In version ESCR_NEW:
+
+#1>2d
+[0]
+#1>MESSAGE
+["……。"]
+#1>WAIT_FOR_CLICK
+[]
     """,
         'rus': """
 Иногда можно столкнуться с одной большой-пребольшой проблемой: текст может не полностью влезать в текстовое окно. Однако, с сим средством вам не нужно обрезать его, отнюдь. Вы можеет организовывать переносы по строкам и сообщениям. Методы указаны ниже.
 >>> Для переносов по строкам добавляйте в них <r>.
 
->>>Для переносов по сообщениям добавьте под текущее сообщение следующий код ("Какая_то_строка" -> текст на новой строке).
+>>>Для переносов по сообщениям добавьте под текущее сообщение следующий код.
+
+В версии ESCR1.00:
 
 #1>MESSAGE 
 []
 #1>21 
 [0]
+
+В версии ESCR_NEW:
+
+#1>2d
+[0]
+#1>MESSAGE
+["……。"]
+#1>WAIT_FOR_CLICK
+[]
+
     """
     }
 
@@ -497,6 +520,10 @@ Sometimes there could be a very big problem: text may not fully get in textbox. 
             ezz = len(mes_file.split(os.sep))
             for root, dirs, files in os.walk(mes_file):
                 for file_name in files:
+                    extension = os.path.splitext(file_name)[1]
+                    if extension == ".001":
+                        continue
+
                     new_file_array = []  # mes_file, txt_file
 
                     basic_path = os.sep.join(os.path.join(root, file_name).split(os.sep)[ezz:])
@@ -510,6 +537,7 @@ Sometimes there could be a very big problem: text may not fully get in textbox. 
                     # Why did I not initiate file management right away, thou ask?
 
             self._unlocker_count = len(files_to_manage)  # ...That is the answer.
+
             for file_mes, file_txt in files_to_manage:
                 new_thread = threading.Thread(daemon=False, target=self._disassemble_this_scr,
                                               args=(file_mes, file_txt))
@@ -588,6 +616,7 @@ Sometimes there could be a very big problem: text may not fully get in textbox. 
                     # Why did I not initiate file management right away, thou ask?
 
             self._unlocker_count = len(files_to_manage)  # ...That is the answer.
+
             for file_mes, file_txt in files_to_manage:
                 new_thread = threading.Thread(daemon=False, target=self._assemble_this_scr,
                                               args=(file_mes, file_txt))

@@ -339,6 +339,7 @@ class ACPXCommandLibVer1_00(ACPXCommandLib):
         ('0e', '', ''),
 
         ('11', '', ''),
+        ('13', '', ''),
         ('14', '', ''),
         ('18', '', ''),
         ('19', '', ''),
@@ -350,29 +351,44 @@ class ACPXCommandLibVer1_00(ACPXCommandLib):
         ('22', '', ''),
         ('23', 'I', 'FLOW_WINDOW'),
         ('24', '', ''),
+        ('25', '', ''),
         ('26', '', ''),
         ('27', '', ''),
+        ('28', '', ''),
         ('2a', '', 'MESSAGE'),
         ('2b', 'I', 'SPEAKER'),
         ('2c', '', 'MENU'),
         ('2d', '', ''),
         ('2f', 'I', ''),
 
+        ('30', 'I', ''),
+        ('31', '', ''),
         ('32', 'I', ''),
-        ('33', 'I', ''),
-        ('34', '', ''),
+        ('33', '', ''),  # I?
+        ('34', 'I', ''),  # ''?
+        ('35', '', ''),
         ('36', '', ''),
         ('38', '', ''),
+        ('37', '', ''),
         ('39', '', ''),
         ('3a', 'I', ''),
         ('3b', '', ''),
+        ('3c', '', ''),
         ('3e', '', ''),
         ('3f', '', ''),
 
+        ('41', '', ''),
+        ('42', '', ''),
         ('43', '', ''),
         ('44', '', ''),
+        ('45', '', ''),
+        ('46', '', ''),
+        ('47', '', ''),
+        ('48', '', ''),
+        ('49', '', ''),
         ('4a', '', ''),
         ('4b', '', ''),
+        ('4c', '', ''),
         ('4d', '', ''),
         ('4e', '', ''),
         ('4f', '', ''),
@@ -407,3 +423,84 @@ class ACPXCommandLibVer1_00(ACPXCommandLib):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+
+
+class ACPXCommandLibVerNEW(ACPXCommandLibVer1_00):
+    command_library = (  # Completely new opcodes?
+        ('01', '', ''),
+        ('02', 'I', ''),
+        ('03', '', ''),
+        ('04', 'i', ''),
+        ('05', 'I', ''),  # ???
+        ('06', '0', ''),
+        ('09', 'I', ''),
+        ('0a', 'i', ''),
+        ('0b', 'I', ''),
+        ('0c', 'I', ''),
+        ('0d', 'I', 'START'),
+        ('0e', '', ''),
+        ('0f', 'O', 'CALL'),
+
+        ('10', 'O', 'JUMP'),
+        ('11', 'O', 'JZ'),
+        ('12', '', 'RETURN'),
+        ('14', '', ''),
+        ('13', '', ''),
+        ('16', '', ''),
+        ('18', '', ''),
+        ('19', '', ''),
+        ('1a', '', ''),
+        ('1b', '', ''),
+        ('1c', '', ''),
+        ('1d', '', ''),
+        ('1e', '', ''),
+        ('1f', '', ''),
+
+        ('20', '', ''),
+        ('21', '', ''),
+        ('22', '', ''),
+        ('23', '', ''),
+        ('24', '', ''),
+        ('25', '', ''),
+        ('26', '', ''),
+        ('27', '', ''),
+        ('28', 'I', ''),
+        ('29', 's', 'MESSAGE'),
+        ('2a', '', 'WAIT_FOR_CLICK'),
+        ('2b', 'sI', 'CHOICE'),
+        ('2c', 'I', ''),
+        ('2d', 'I', ''),
+    )
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+    @staticmethod
+    def get_S(in_file, encoding: str) -> str:
+        """Extract string from the file."""
+
+        string = b''
+        byte = in_file.read(1)
+        while byte != b'\x55':
+            int_byte = byte[0] ^ 0x55
+            byte = int_byte.to_bytes(1, 'little')
+            string += byte
+            byte = in_file.read(1)
+        return string.decode(encoding)
+
+    @staticmethod
+    def set_S(arg: str, encoding: str) -> bytes:
+        """Set string structure."""
+        arg_bytes = arg.encode(encoding) + b'\x00'
+        new_arg_bytes = b''
+        for byte in arg_bytes:
+            new_byte = byte ^ 0x55
+            new_arg_bytes += new_byte.to_bytes(1, 'little')
+        return new_arg_bytes
+
+    def set_s(self, arg: str, encoding: str) -> bytes:
+        """Set linked string structure."""
+        str_number = len(self.string_bank) - 1
+        self.string_bank.append(arg)
+        arg_bytes = self.set_I(str_number, 'I')
+        return arg_bytes

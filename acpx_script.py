@@ -1,6 +1,6 @@
 import struct
 import json
-from acpx_command_lib import ACPXCommandLibVer1_00
+from acpx_command_lib import ACPXCommandLibVer1_00, ACPXCommandLibVerNEW
 
 
 # Made by Tester.
@@ -20,6 +20,7 @@ from acpx_command_lib import ACPXCommandLibVer1_00
 class ACPXBinScript:
     versions_lib = (
         ("ESCR1_00", ACPXCommandLibVer1_00),
+        ("ESCR_NEW", ACPXCommandLibVerNEW),
     )
     default_version = "ESCR1_00"
 
@@ -60,7 +61,10 @@ class ACPXBinScript:
 
         # Next, we should calculate the start of the code block and fix the offsets.
 
-        code_block_start = 8 + 4 + 4 * len(strings) + 4
+        if self._version == "ESCR_NEW":
+            code_block_start = 24
+        else:
+            code_block_start = 8 + 4 + 4 * len(strings) + 4
         offsets = [code_block_start + i for i in offsets]
         self.command_lib.offset_bank = tuple(offsets)
         self.command_lib.label_definer = tuple(labels)
@@ -86,6 +90,7 @@ class ACPXBinScript:
         version_autochange -- get version from the script.
         string_autochange -- get strings from the script.
         offsets_autochange -- automatically change the start code block offsets."""
+
         if self._debug:
             print("=== Disassembling of {} to {} started.".format(self.bin_file, self.txt_file))
 
@@ -99,9 +104,15 @@ class ACPXBinScript:
             print("Code block offset:", code_block_offset)
         if version_autochange:
             self.version = version
+
+        if self._version == "ESCR_NEW":
+            end_offset = 0
+        else:
+            end_offset = string_block_offset
+
         if offsets_autochange:
             self.command_lib.offset_beginner = code_block_offset
-            offsets = self._extract_offsets(code_block_offset, string_block_offset)
+            offsets = self._extract_offsets(code_block_offset, end_offset)
             self.command_lib.offset_bank = sorted(set(offsets))
             self.command_lib.label_definer = tuple(range(len(offsets)))
         if self._debug:
@@ -115,7 +126,7 @@ class ACPXBinScript:
         if string_autochange:
             self.command_lib.string_bank = strings
 
-        self._disassemble_code(code_block_offset, string_block_offset)
+        self._disassemble_code(code_block_offset, end_offset)
 
         if self._debug:
             print("=== Disassembling of {} to {} ended.".format(self.bin_file, self.txt_file))
@@ -126,7 +137,10 @@ class ACPXBinScript:
 
     def _get_pre_data(self) -> tuple:
         """Get data for the future assembling: strings, offsets and offsets' labels."""
-        strings = ['']
+        if self._version == "ESCR_NEW":
+            strings = []
+        else:
+            strings = ['']
         offsets = []
         labels = []
 
@@ -158,8 +172,9 @@ class ACPXBinScript:
                         pointer += self.command_lib.get_len_from_structure(arguments)
                         arg_data = json.loads(df.readline())
                         new_strings = self.command_lib.get_all_linked_strings(arguments, arg_data)
-                        for i in range(len(new_strings)):
-                            new_strings[i] = self.restring(new_strings[i], 'external', 'internal')
+                        if self._version != "ESCR_NEW":
+                            for i in range(len(new_strings)):
+                                new_strings[i] = self.restring(new_strings[i], 'external', 'internal')
                         strings.extend(new_strings)
                 elif new_line[0] == '@':  # To be safe.
                     continue
@@ -172,27 +187,58 @@ class ACPXBinScript:
         string_block_len_pointer -- pointer to the end of the strings block."""
         with (open(self.bin_file, 'wb') as af,
               open(self.txt_file, 'r', encoding=self.txt_encoding, errors='replace') as df):
-            tech_strings = [i.encode(self.bin_encoding) + b'\x00' for i in strings]
+            # tech_strings = [i.encode(self.bin_encoding) + b'\x00' for i in strings]
+            tech_strings = [self.command_lib.set_S(i, self.bin_encoding) for i in strings]
             str_block_len = self._assemble_header(af, tech_strings, string_block_len_pointer)
             self._assemble_code(af, df)
-            self._assemble_strings(af, tech_strings, str_block_len)
+            if self._version != "ESCR_NEW":
+                self._assemble_strings(af, tech_strings, str_block_len)
 
     def _assemble_header(self, af, bstrings, string_block_len_pointer) -> int:
         """Assemble the header and get len of string block.
         af -- assembly file.
         bstrings -- byte strings.
         string_block_len_pointer -- pointer to the end of the strings block."""
-        af.write(self.version.encode('cp932'))  # Signature. Do not change this line!!!
-        af.write(struct.pack('I', len(bstrings)))
-        pointer = 0
-        for bstr in bstrings:
-            af.write(struct.pack('I', pointer))
-            pointer += len(bstr)
-        af.write(struct.pack('I', string_block_len_pointer))  # String block length structure offset.
+
+        if self._version == "ESCR_NEW":
+            if bstrings:  # No assemble when 0 strings.
+                with open(self.file_001, 'wb') as strf:  # The second file, the message one.
+                    strf.write(b'@mess:__')
+                    strf.write(struct.pack('I', len(bstrings)))
+
+                    lenner = 0
+                    for bstr in bstrings:
+                        lenner += len(bstr)
+
+                    strf.write(struct.pack('I', lenner))
+                    pointer = 0
+                    for bstr in bstrings:
+                        strf.write(struct.pack('I', pointer))
+                        pointer += len(bstr)
+                    for bstr in bstrings:
+                        strf.write(bstr)
+            else:
+                pointer = 0
+
+            # Okay, now to the header itself.
+
+            af.write(b'@code:__')
+            af.write(struct.pack('Q', string_block_len_pointer))
+            af.write(bytes(4))
+            af.write(struct.pack('I', len(bstrings)))
+
+        else:
+            af.write(self.version.encode('cp932'))  # Signature. Do not change this line!!!
+            af.write(struct.pack('I', len(bstrings)))
+            pointer = 0
+            for bstr in bstrings:
+                af.write(struct.pack('I', pointer))
+                pointer += len(bstr)
+            af.write(struct.pack('I', string_block_len_pointer))  # String block length structure offset.
 
         return pointer
 
-    def _assemble_code(self, af, df) -> None:
+    def _assemble_code(self, af, df, new_scr_supp_len=0) -> None:
         """Assemble the code and return its end.
         af -- assembly file.
         df -- disassembled file."""
@@ -246,14 +292,31 @@ class ACPXBinScript:
         string_offsets = []
         code_block_offset = 0
         string_block_offset = 0
-        with open(self.bin_file, 'rb') as sf:
-            version = sf.read(8).decode('cp932')  # Signature. Do not change this line!!!
-            off_num = struct.unpack('I', sf.read(4))[0]
-            for _ in range(off_num):
-                string_offsets.append(struct.unpack('I', sf.read(4))[0])
-            string_block_offset = struct.unpack('I', sf.read(4))[0]
-            code_block_offset = sf.tell()
-            string_block_offset += code_block_offset  # As the offset from the beginning of the code block.
+
+        if self.version == "ESCR_NEW":  # Too different from the older ones.
+            code_block_offset = 24
+            version = "ESCR_NEW"
+
+            try:
+                with open(self.file_001, 'rb') as sf:
+                    sf.seek(8, 0)
+                    off_num = struct.unpack('I', sf.read(4))[0]
+                    test_num = struct.unpack('I', sf.read(4))[0]  # From strings start to their end. Check num.
+                    for _ in range(off_num):
+                        string_offsets.append(struct.unpack('I', sf.read(4))[0])
+                    string_block_offset = sf.tell()
+            except FileNotFoundError:  # 0 strings case.
+                pass
+
+        else:
+            with open(self.bin_file, 'rb') as sf:
+                version = sf.read(8).decode('cp932')  # Signature. Do not change this line!!!
+                off_num = struct.unpack('I', sf.read(4))[0]
+                for _ in range(off_num):
+                    string_offsets.append(struct.unpack('I', sf.read(4))[0])
+                string_block_offset = struct.unpack('I', sf.read(4))[0]
+                code_block_offset = sf.tell()
+                string_block_offset += code_block_offset  # As the offset from the beginning of the code block.
         return version, string_offsets, code_block_offset, string_block_offset
 
     def _unpack_strings(self, string_block_start: int, string_offsets: tuple) -> tuple:
@@ -262,13 +325,24 @@ class ACPXBinScript:
         string_offsets -- offsets of the strings in the section."""
         strings = []
 
-        with open(self.bin_file, 'rb') as sf:
-            for offset in string_offsets:
-                new_offset = string_block_start + 4 + offset
-                sf.seek(new_offset, 0)
-                new_string = self.command_lib.get_S(sf, self.bin_encoding)
-                new_string = self.restring(new_string, "internal", "external")
-                strings.append(new_string)
+        if self.version == "ESCR_NEW":
+            try:
+                with open(self.file_001, 'rb') as sf:
+                    for offset in string_offsets:
+                        new_offset = string_block_start + offset
+                        sf.seek(new_offset, 0)
+                        new_string = self.command_lib.get_S(sf, self.bin_encoding)
+                        strings.append(new_string)
+            except FileNotFoundError:  # 0 strings case.
+                pass
+        else:
+            with open(self.bin_file, 'rb') as sf:
+                for offset in string_offsets:
+                    new_offset = string_block_start + 4 + offset
+                    sf.seek(new_offset, 0)
+                    new_string = self.command_lib.get_S(sf, self.bin_encoding)
+                    new_string = self.restring(new_string, "internal", "external")
+                    strings.append(new_string)
 
         return tuple(strings)
 
@@ -279,6 +353,10 @@ class ACPXBinScript:
         offsets = []
 
         with open(self.bin_file, 'rb') as af:
+            if end_offset == 0:  # ESCR_END
+                af.seek(8)
+                end_offset = struct.unpack('Q', af.read(8))[0] + 24  # Script check offset.
+
             af.seek(start_offset, 0)
 
             while True:
@@ -306,6 +384,10 @@ class ACPXBinScript:
         end_offset -- offset of the code section's end."""
 
         with open(self.bin_file, 'rb') as af, open(self.txt_file, 'w', encoding=self.txt_encoding) as df:
+            if end_offset == 0:  # ESCR_END
+                af.seek(8)
+                end_offset = struct.unpack('Q', af.read(8))[0] + 24  # Script check offset.
+
             af.seek(start_offset, 0)
             free_bytes = b''
             free_bytes_offset = 0
@@ -351,6 +433,15 @@ class ACPXBinScript:
                 free_bytes_offset = 0
 
     # Properties.
+
+    @property
+    def file_001(self):
+        """Name of 001's file."""
+        if self.bin_file.endswith(".bin"):
+            neo = self.bin_file[:-4]
+        else:
+            neo = self.bin_file
+        return neo + ".001"
 
     @property
     def version(self):
